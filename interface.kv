@@ -1,0 +1,14 @@
+# interface.kv
+<LectureApp>:
+    orientation: 'vertical'
+    Label:
+        text: 'Voice Lecture Analysis'
+        font_size: 24
+        size_hint_y: None
+        height: 50
+    Button:
+        text: 'Start Recording'
+        on_press: root.start_recording()
+    Button:
+        text: 'Stop Recording'
+        on_press: root.stop_recording()
