@@ -3,7 +3,7 @@
 <LectureApp>:
     canvas.before:
         Color:
-            rgba: 0.2, 0.6, 0.8, 1  # Background color
+            rgba: 0, 0, 0, 1  # Background color
         Rectangle:
             pos: self.pos
             size: self.size
@@ -39,6 +39,33 @@
         background_color: (0.8, 0.1, 0.1, 1)  # Red button
         color: (1, 1, 1, 1)  # White text
         border_radius: [10, 10, 10, 10]  # Rounded corners
+
+    Button:
+        text: 'Show Word Frequency'
+        on_press: root.show_word_frequency()
+        size_hint_y: None
+        height: 50
+        background_color: (0.5, 0.5, 0.5, 1)  # Gray button
+        color: (1, 1, 1, 1)  # White text
+        border_radius: [10, 10, 10, 10]  # Rounded corners
+
+    Button:
+        text: 'Show Summary'
+        on_press: root.show_summary()
+        size_hint_y: None
+        height: 50
+
+    Button:
+        text: 'Show Key Points'
+        on_press: root.show_key_points()
+        size_hint_y: None
+        height: 50
+
+    Button:
+        text: 'Show Wordcloud'
+        on_press: root.show_wordcloud()
+        size_hint_y: None
+        height: 50
 
     Button:
         text: 'Exit'
