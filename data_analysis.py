@@ -7,6 +7,7 @@ import speech_recognition as sr
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
+from scipy.io import wavfile
 
 # Download NLTK data if necessary
 nltk.download('punkt')
@@ -18,21 +19,30 @@ class DataAnalysis:
         self.data = None
         self.transcript = None
 
-    def load_data(self):
-        self.data = np.fromfile(self.filename, dtype=np.int16)
-        print("Data loaded.")
-
-    def speech_to_text(self):
-        recognizer = sr.Recognizer()
-        with sr.AudioFile(self.filename) as source:
-            audio_data = recognizer.record(source)
+    def load_data(self, filename=None):
+        """Load the audio data from a file."""
+        if filename:
+            self.filename = filename
         try:
-            self.transcript = recognizer.recognize_google(audio_data)
-            print("Transcript generated.")
+            self.fs, self.data = wavfile.read(self.filename)
+            print("Audio data loaded.")
+        except Exception as e:
+            print(f"Error loading audio: {e}")
+
+    def speech_to_text(self, filename=None):
+        """Convert audio speech to text."""
+        if filename:
+            self.filename = filename
+        recognizer = sr.Recognizer()
+        try:
+            with sr.AudioFile(self.filename) as source:
+                audio = recognizer.record(source)
+                self.transcription = recognizer.recognize_google(audio)
+                print("Transcription:", self.transcription)
         except sr.UnknownValueError:
             print("Google Speech Recognition could not understand the audio.")
-        except sr.RequestError:
-            print("Could not request results from Google Speech Recognition service.")
+        except sr.RequestError as e:
+            print(f"Could not request results from Google Speech Recognition service; {e}")
 
     def word_count_analysis(self):
         if self.transcript is None:
