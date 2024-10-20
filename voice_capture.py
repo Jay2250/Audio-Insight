@@ -1,65 +1,54 @@
-# voice_capture.py
-import threading
-import sounddevice as sd
-import numpy as np
+import speech_recognition as sr
 import wave
 
-from pydub import AudioSegment
-from pydub.effects import normalize
-
 class VoiceCapture:
-    def __init__(self, filename='lecture.wav', fs=44100):
+    def __init__(self, filename='lecture.wav'):
         self.filename = filename
-        self.fs = fs
-        self.recording = []
-        self.is_recording = False
+        self.recognizer = sr.Recognizer()
+        self.microphone = sr.Microphone()
+        self.audio_data_list = []  # Store audio chunks
 
-    def preprocess_audio(self, filename):
-        # Load audio file
-        audio = AudioSegment.from_wav(filename)
-
-        # Convert to mono and normalize
-        mono_audio = audio.set_channels(1)
-        normalized_audio = normalize(mono_audio)
-
-        # Export the processed audio to a new file
-        processed_filename = "processed_" + filename
-        normalized_audio.export(processed_filename, format="wav")
-        return processed_filename
-    
-    def _record_audio(self, duration):
-        """The actual recording logic that runs in a separate thread."""
+    def start_recording(self):
         print("Recording started...")
-        self.recording = sd.rec(int(duration * self.fs), samplerate=self.fs, channels=2, dtype='int16')
-        sd.wait()  # Wait until recording is finished
-        print("Recording finished.")
-    
-    def start_recording(self, duration=60):  # Record for 60 seconds
-        print("Recording started...")
-        self.is_recording = True
-        self.recording_thread = threading.Thread(target=self._record_audio, args=(duration,))
-        self.recording_thread.start()
-    
-    def convert_to_mono(self, filename):
-        """Convert the audio to mono."""
-        audio = AudioSegment.from_wav(filename)
-        mono_audio = audio.set_channels(1)
-        mono_filename = "mono_" + filename
-        mono_audio.export(mono_filename, format="wav")
-        return mono_filename
-
-    def save_recording(self):
-        with wave.open(self.filename, 'wb') as wf:
-            wf.setnchannels(2)
-            wf.setsampwidth(2)
-            wf.setframerate(self.fs)
-            wf.writeframes(self.recording.tobytes())
-        print(f"Recording saved as {self.filename}")
-
+        try:
+            # Adjust microphone sensitivity to ambient noise
+            with self.microphone as source:
+                self.recognizer.adjust_for_ambient_noise(source)
+                print("Listening... (Press 'Stop Recording' to end)")
+                # Record in chunks and accumulate audio data
+                audio = self.recognizer.listen(source)
+                self.audio_data_list.append(audio)  # Store the audio chunk
+        except Exception as e:
+            print(f"Error during recording: {e}")
 
     def stop_recording(self):
-        """Stop the recording."""
-        if self.is_recording:
-            sd.stop()
-            self.is_recording = False
-            print("Recording stopped.")
+        print("Recording stopped.")
+        if len(self.audio_data_list) > 0:
+            # Concatenate all audio chunks
+            combined_audio = b''.join([audio.get_wav_data() for audio in self.audio_data_list])
+            # Save the combined audio as a single WAV file
+            with wave.open(self.filename, 'wb') as wf:
+                wf.setnchannels(1)  # Mono
+                wf.setsampwidth(2)  # 2 bytes for 16-bit samples
+                wf.setframerate(16000)  # Sample rate
+                wf.writeframes(combined_audio)
+            print(f"Recording saved as {self.filename}")
+        else:
+            print("No audio data to save.")
+        # Clear the list after saving
+        self.audio_data_list = []
+
+    def speech_to_text(self):
+        try:
+            if self.audio_data_list:
+                combined_audio = b''.join([audio.get_wav_data() for audio in self.audio_data_list])
+                text = self.recognizer.recognize_google(self.audio_data_list[-1])  # Use the last chunk for now
+                print(f"Transcription: {text}")
+                return text
+            else:
+                print("No audio data available to transcribe.")
+                return None
+        except sr.UnknownValueError:
+            print("Google Speech Recognition could not understand the audio.")
+        except sr.RequestError as e:
+            print(f"Could not request results from Google Speech Recognition service; {e}")

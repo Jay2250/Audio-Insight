@@ -29,21 +29,22 @@ class DataAnalysis:
         except Exception as e:
             print(f"Error loading audio: {e}")
 
-    def speech_to_text(self, filename=None):
+    def speech_to_text(self, filename='lecture.wav'):
         """Convert audio speech to text."""
         if filename:
             self.filename = filename
         recognizer = sr.Recognizer()
         try:
             with sr.AudioFile(self.filename) as source:
-                audio = recognizer.record(source)
-                self.transcription = recognizer.recognize_google(audio)
-                print("Transcription:", self.transcription)
+                audio = recognizer.record(source)  # Record the audio from the file
+                self.transcript = recognizer.recognize_google(audio)  # Store as self.transcript
+                print("Transcription:", self.transcript)
         except sr.UnknownValueError:
             print("Google Speech Recognition could not understand the audio.")
         except sr.RequestError as e:
             print(f"Could not request results from Google Speech Recognition service; {e}")
 
+    
     def word_count_analysis(self):
         if self.transcript is None:
             return None
