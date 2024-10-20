@@ -23,22 +23,22 @@
         text_size: self.size
 
     Button:
-        text: 'Start Recording'
-        on_press: root.start_recording()
+        text: 'Select Audio File'
+        on_press: root.open_file_chooser()
         size_hint_y: None
         height: 50
-        background_color: (0.1, 0.8, 0.1, 1)  # Green button
+        background_color: (0.1, 0.8, 0.1, 1) 
         color: (1, 1, 1, 1)  # White text
-        border_radius: [10, 10, 10, 10]  # Rounded corners
+        border_radius: [10, 10, 10, 10] 
 
     Button:
-        text: 'Stop Recording'
-        on_press: root.stop_recording()
+        text: 'Process File'
+        on_press: root.process_audio_file()
         size_hint_y: None
         height: 50
-        background_color: (0.8, 0.1, 0.1, 1)  # Red button
+        background_color: (0.8, 0.1, 0.1, 1)  
         color: (1, 1, 1, 1)  # White text
-        border_radius: [10, 10, 10, 10]  # Rounded corners
+        border_radius: [10, 10, 10, 10]  
 
     Button:
         text: 'Show Word Frequency'

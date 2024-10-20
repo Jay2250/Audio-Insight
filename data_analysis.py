@@ -23,9 +23,7 @@ class DataAnalysis:
         """Convert in-memory audio data (AudioData object) to text."""
         recognizer = sr.Recognizer()
         self.transcript = None
-        audio_data = sr.AudioFile('lecture.wav')
-        with audio_data as source:
-            audio_data = recognizer.record(source)
+
         try:
             # Convert the in-memory audio data to text
             self.transcript = recognizer.recognize_google(audio_data)
