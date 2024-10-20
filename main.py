@@ -6,6 +6,7 @@ from data_analysis import DataAnalysis
 
 Builder.load_file('interface.kv')
 
+
 class LectureApp(BoxLayout):
     def __init__(self, **kwargs):
         super(LectureApp, self).__init__(**kwargs)
@@ -16,9 +17,10 @@ class LectureApp(BoxLayout):
         self.voice_capture.start_recording()
 
     def stop_recording(self):
-        # self.voice_capture.stop_recording()
-        # self.data_analysis.load_data(self.voice_capture.filename)
-        self.data_analysis.speech_to_text()
+        # Get the audio data from voice capture and pass it to data analysis for transcription
+        audio_data = self.voice_capture.get_audio_data()
+        if audio_data:
+            self.data_analysis.speech_to_text(audio_data)
 
     def show_word_frequency(self):
         df = self.data_analysis.word_count_analysis()
@@ -38,9 +40,11 @@ class LectureApp(BoxLayout):
     def show_wordcloud(self):
         self.data_analysis.generate_wordcloud()
 
+
 class MyApp(App):
     def build(self):
         return LectureApp()
+
 
 if __name__ == '__main__':
     MyApp().run()

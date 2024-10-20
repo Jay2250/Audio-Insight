@@ -7,53 +7,47 @@ import speech_recognition as sr
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
-from scipy.io import wavfile
+import wave
 
 # Download NLTK data if necessary
 nltk.download('punkt')
+nltk.download('punkt_tab')
 nltk.download('stopwords')
 
+
 class DataAnalysis:
-    def __init__(self, filename='lecture.wav'):
-        self.filename = filename
-        self.data = None
+    def __init__(self):
         self.transcript = None
 
-    def load_data(self, filename=None):
-        """Load the audio data from a file."""
-        if filename:
-            self.filename = filename
-        try:
-            self.fs, self.data = wavfile.read(self.filename)
-            print("Audio data loaded.")
-        except Exception as e:
-            print(f"Error loading audio: {e}")
-
-    def speech_to_text(self, filename='lecture.wav'):
-        """Convert audio speech to text."""
-        if filename:
-            self.filename = filename
+    def speech_to_text(self, audio_data):
+        """Convert in-memory audio data (AudioData object) to text."""
         recognizer = sr.Recognizer()
+        self.transcript = None
+        audio_data = sr.AudioFile('lecture.wav')
+        with audio_data as source:
+            audio_data = recognizer.record(source)
         try:
-            with sr.AudioFile(self.filename) as source:
-                audio = recognizer.record(source)  # Record the audio from the file
-                self.transcript = recognizer.recognize_google(audio)  # Store as self.transcript
-                print("Transcription:", self.transcript)
+            # Convert the in-memory audio data to text
+            self.transcript = recognizer.recognize_google(audio_data)
+            print("Transcription:", self.transcript)
         except sr.UnknownValueError:
             print("Google Speech Recognition could not understand the audio.")
         except sr.RequestError as e:
-            print(f"Could not request results from Google Speech Recognition service; {e}")
+            print(
+                f"Could not request results from Google Speech Recognition service; {e}")
 
-    
     def word_count_analysis(self):
         if self.transcript is None:
             return None
         words = word_tokenize(self.transcript.lower())
-        words = [word for word in words if word.isalpha()]  # Remove punctuation
-        filtered_words = [word for word in words if word not in stopwords.words('english')]
+        # Remove punctuation
+        words = [word for word in words if word.isalpha()]
+        filtered_words = [
+            word for word in words if word not in stopwords.words('english')]
         word_freq = Counter(filtered_words)
 
-        df = pd.DataFrame(word_freq.most_common(10), columns=['Word', 'Frequency'])
+        df = pd.DataFrame(word_freq.most_common(
+            10), columns=['Word', 'Frequency'])
         return df
 
     def summarize_text(self):
@@ -77,8 +71,10 @@ class DataAnalysis:
         if self.transcript is None:
             return None
         words = word_tokenize(self.transcript.lower())
-        words = [word for word in words if word.isalpha()]  # Remove punctuation
-        filtered_words = [word for word in words if word not in stopwords.words('english')]
+        # Remove punctuation
+        words = [word for word in words if word.isalpha()]
+        filtered_words = [
+            word for word in words if word not in stopwords.words('english')]
         key_words = Counter(filtered_words).most_common(5)
         return [word for word, _ in key_words]
 
@@ -95,7 +91,8 @@ class DataAnalysis:
     def generate_wordcloud(self):
         if self.transcript is None:
             return None
-        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(self.transcript)
+        wordcloud = WordCloud(
+            width=800, height=400, background_color='white').generate(self.transcript)
         plt.figure(figsize=(10, 5))
         plt.imshow(wordcloud, interpolation='bilinear')
         plt.axis('off')
