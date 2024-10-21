@@ -1,6 +1,7 @@
 from pydub import AudioSegment
 import os
 import speech_recognition as sr
+from moviepy.editor import AudioFileClip
 
 class AudioCapture:
     def __init__(self):
@@ -19,10 +20,15 @@ class AudioCapture:
             if file_format == 'wav':
                 print(f"File is already in .wav format: {file_path}")
                 return file_path
+            
+            audio = AudioFileClip(file_path)
+            # Write as WAV
+            audio.write_audiofile('output.wav', codec='pcm_s16le')
+            print(f"Converted '{file_path}' to 'output.wav'")
 
             # Convert the file to .wav using pydub
             print(f"Converting {file_path} to .wav format...")
-            audio = AudioSegment.from_file(file_path, format=file_format)
+            audio = AudioSegment.from_file('output.wav', format=file_format)
             audio.export(wav_file_path, format="wav")
             print(f"File successfully converted to {wav_file_path}")
             
